@@ -16,6 +16,10 @@ data "aws_security_group" "private_sg" {
     id = aws_security_group.private_security_groups.id
 }
 
+data "aws_security_group" "bation_sg" {
+    id = aws_security_group.bation_security_groups.id
+}
+
 
 resource "aws_iam_role" "ec2_ssm_role" {
     name = "ec2_ssm_role"
@@ -42,6 +46,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
     name = "ec2_instance_profile"
     role = aws_iam_role.ec2_ssm_role.name 
 }
+
 resource "aws_security_group" "public_security_groups" {
     vpc_id = aws_vpc.free_tier_vpc.id
 
@@ -77,7 +82,7 @@ resource "aws_security_group" "private_security_groups" {
         from_port = 0
         to_port = 0
         protocol = "-1"
-        security_groups = [data.aws_security_group.nat_sg.id]
+        security_groups = [data.aws_security_group.bation_sg.id]
     }
 
     egress {
@@ -86,8 +91,36 @@ resource "aws_security_group" "private_security_groups" {
         protocol = "-1"
         security_groups = [data.aws_security_group.nat_sg.id]
     }
+
+    egress {
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        security_groups = [data.aws_security_group.bation_sg.id]
+    }
     tags = {
         Name = "allow private traffic"
+    }
+}
+
+resource "aws_security_group" "bation_security_groups" {
+    vpc_id = aws_vpc.free_tier_vpc.id
+    
+    ingress {
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        security_groups = [data.aws_security_group.private_sg.id]
+    }
+
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    tags = {
+        Name = "allow traffic for nginx"
     }
 }
 
@@ -105,6 +138,18 @@ resource "aws_instance" "free_tier_nat_instance" {
               EOF
     tags = {
         Name = "terraform-nat-instance"
+    }
+}
+
+resource "aws_instance" "free_tier_bation_host" {
+    ami = data.aws_ami.amazon_linux.id
+    instance_type = "t3.micro"
+    iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+    vpc_security_group_ids = [ aws_security_group.bation_security_groups.id ]
+    subnet_id = aws_subnet.public_subnet.id
+    associate_public_ip_address = true
+    tags = {
+        Name = "terraform-bation-instance"
     }
 }
 
@@ -165,11 +210,17 @@ resource "aws_route" "private_route" {
 resource "aws_subnet" "public_subnet" {
     vpc_id = aws_vpc.free_tier_vpc.id
     cidr_block = "10.1.1.0/24"
+    tags = {
+      Name = "public"
+    }
 }
 
 resource "aws_subnet" "private_subnet" {
     vpc_id = aws_vpc.free_tier_vpc.id
     cidr_block = "10.1.2.0/24"
+    tags = {
+      Name = "private"
+    }
 }
 
 resource "aws_route_table_association" "public_association" {
