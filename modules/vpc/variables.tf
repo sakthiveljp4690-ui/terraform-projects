@@ -1,7 +1,5 @@
-variable "region" {}
-variable "ami_filter" {}
 variable "internet_cidr" {}
 variable "vpc_range" {}
 variable "private_network_range" {}
 variable "public_network_range" {}
-variable "instance_type" {}
+variable "primary_eni" {}
