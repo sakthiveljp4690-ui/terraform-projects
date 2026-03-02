@@ -5,18 +5,18 @@ from diagrams.aws.database import RDS
 from diagrams.aws.management import SystemsManager
 from diagrams.aws.network import PrivateSubnet
 
-with Diagram("Production-Style AWS Architecture", show=True):
+with Diagram("Production alike Two tier Architecture", show=True):
 
     igw = InternetGateway("Internet")
 
-    with Cluster("VPC 10.1.0.0/16"):
+    with Cluster("VPC 10.1.0.0/16\nap-northeast-1"):
 
         with Cluster("Public Subnets (1a,1c)"):
-            alb = ELB("Application Load Balancer")
+            alb = ELB("ALB")
             nat = NATGateway("NAT Gateway")
 
-        with Cluster("Private Subnet (1a)"):
-            app = EC2("App EC2\nIAM Role Attached")
+        with Cluster("Private Subnet (1a,1c)"):
+            app = EC2("App EC2\nIAM Role Attached\n(ssm ,rds-db-connect)")
             db = RDS("RDS MySQL\nIAM DB Auth Enabled")
 
             with Cluster("Interface Endpoints"):
