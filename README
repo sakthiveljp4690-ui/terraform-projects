@@ -12,10 +12,7 @@ Architecture includes:
 - IAM roles and security groups
 
 # Architecture Diagram
-
-![Two Tier Architecture](./secure_two-tier_architecture.png)
-
-## 🧠 What This Architecture Does
+![Architecture](./secure_two-tier_architecture.png)
 
 This deployment provides:
 
