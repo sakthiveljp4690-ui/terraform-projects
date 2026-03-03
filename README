@@ -11,12 +11,6 @@ Architecture includes:
 - VPC Interface Endpoints for SSM components
 - IAM roles and security groups
 
-# Architecture Diagram
-
-![Two Tier Architecture](./secure_two-tier_architecture.png)
-
-## 🧠 What This Architecture Does
-
 This deployment provides:
 
 1. Web Tier (Auto Scaling Group)**  
